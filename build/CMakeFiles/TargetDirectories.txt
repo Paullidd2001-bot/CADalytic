@@ -1,0 +1,10 @@
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/CMakeFiles/cadalytic.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/CMakeFiles/edit_cache.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/CMakeFiles/rebuild_cache.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/CMakeFiles/cadalytic_autogen_timestamp_deps.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/CMakeFiles/cadalytic_autogen.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/geometry/CMakeFiles/geometry.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/geometry/CMakeFiles/edit_cache.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/geometry/CMakeFiles/rebuild_cache.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/geometry/CMakeFiles/geometry_autogen_timestamp_deps.dir
+C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/geometry/CMakeFiles/geometry_autogen.dir
