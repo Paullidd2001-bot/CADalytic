@@ -5,6 +5,9 @@
 
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepPrimAPI_MakeSphere.hxx>
+#include <BRepPrimAPI_MakeCone.hxx>
+#include <BRepPrimAPI_MakeTorus.hxx>
 #include <AIS_Shape.hxx>
 #include <Quantity_Color.hxx>
 #include <Standard_Version.hxx>
@@ -100,6 +103,12 @@ void Occt3DView::initOcct()
     m_context->SetDisplayMode(AIS_Shaded, true);
     m_context->SetAutomaticHilight(true);
     m_context->Activate(0);
+    // Selection Modes
+    m_context->Deactivate();
+    m_context->Activate(AIS_Shape::SelectionMode(TopAbs_SHAPE));   // whole shape
+    m_context->Activate(AIS_Shape::SelectionMode(TopAbs_VERTEX));  // vertex
+    m_context->Activate(AIS_Shape::SelectionMode(TopAbs_EDGE));    // edge
+    m_context->Activate(AIS_Shape::SelectionMode(TopAbs_FACE));    // face
 
     // ViewCube – diagnostic version
     m_viewCube = new AIS_ViewCube();
@@ -129,23 +138,65 @@ void Occt3DView::initOcct()
     m_viewer->ActivateGrid(Aspect_GT_Rectangular, Aspect_GDM_Lines);
 
     // Demo geometry
-    //Handle(AIS_Shape) box =
-        //new AIS_Shape(BRepPrimAPI_MakeBox(100, 80, 60).Shape());
-    //Handle(AIS_Shape) cyl =
-        //new AIS_Shape(BRepPrimAPI_MakeCylinder(20, 80).Shape());
+    Handle(AIS_Shape) box =
+        new AIS_Shape(BRepPrimAPI_MakeBox(100, 80, 60).Shape());
+    Handle(AIS_Shape) cyl =
+        new AIS_Shape(BRepPrimAPI_MakeCylinder(20, 80).Shape());
 
-    //box->SetDisplayMode(AIS_Shaded);
-    //cyl->SetDisplayMode(AIS_Shaded);
+    box->SetDisplayMode(AIS_Shaded);
+    cyl->SetDisplayMode(AIS_Shaded);
 
-    //m_context->Display(box, false);
-    //m_context->Display(cyl, false);
+    m_context->Display(box, false);
+    m_context->Display(cyl, false);
 
-    //m_context->Activate(box, 0);
-    //m_context->Activate(cyl, 0);
+    m_context->Activate(box, 0);
+    m_context->Activate(cyl, 0);
 
-    //m_context->UpdateCurrentViewer();
+    auto sphere = new AIS_Shape(BRepPrimAPI_MakeSphere(40).Shape());
+    auto cone   = new AIS_Shape(BRepPrimAPI_MakeCone(10, 5, 60).Shape());
+    auto torus  = new AIS_Shape(BRepPrimAPI_MakeTorus(40, 10).Shape());
 
-    //m_initialized = true;
+    m_context->Display(sphere, false);
+    m_context->Display(cone, false);
+    m_context->Display(torus, false);
+
+    // Position the demo shapes so they don't overlap
+
+    // Move box left
+    gp_Trsf trBox;
+    trBox.SetTranslation(gp_Vec(-150, 0, 0));
+    box->SetLocalTransformation(trBox);
+
+    // Move cylinder right
+    gp_Trsf trCyl;
+    trCyl.SetTranslation(gp_Vec(150, 0, 0));
+    cyl->SetLocalTransformation(trCyl);
+
+    // Move sphere up
+    gp_Trsf trSphere;
+    trSphere.SetTranslation(gp_Vec(0, 150, 0));
+    sphere->SetLocalTransformation(trSphere);
+
+    // Move torus down
+    gp_Trsf trTorus;
+    trTorus.SetTranslation(gp_Vec(0, -150, 0));
+    torus->SetLocalTransformation(trTorus);
+
+    // Move cone forward (towards camera)
+    gp_Trsf trCone;
+    trCone.SetTranslation(gp_Vec(0, 0, 150));
+    cone->SetLocalTransformation(trCone);
+
+    // Colour Objects
+    box->SetColor(Quantity_NOC_RED);
+    cyl->SetColor(Quantity_NOC_BLUE1);
+    sphere->SetColor(Quantity_NOC_GREEN);
+    torus->SetColor(Quantity_NOC_YELLOW);
+    cone->SetColor(Quantity_NOC_MAGENTA1);
+
+    m_context->UpdateCurrentViewer();
+
+    m_initialized = true;
 }
 
 void Occt3DView::renderOcct()
@@ -187,19 +238,28 @@ void Occt3DView::mousePressEvent(QMouseEvent* event)
 
     if (event->button() == Qt::LeftButton)
     {
+        // Preselection
         m_context->MoveTo(event->position().x(), event->position().y(), m_view, true);
 
+        // Selection
         if (event->modifiers() & Qt::ShiftModifier)
             m_context->SelectDetected(AIS_SelectionScheme_XOR);
         else
             m_context->SelectDetected(AIS_SelectionScheme_Replace);
 
+        // Start rotation
+        if (!m_view.IsNull())
+            m_view->StartRotation(event->position().x(), event->position().y());
+
         renderOcct();
         return;
     }
 
-    if (event->button() == Qt::LeftButton && !m_view.IsNull())
-        m_view->StartRotation(event->position().x(), event->position().y());
+    if (event->button() == Qt::MiddleButton)
+    {
+        // Middle button does not select — only pan
+        return;
+    }
 }
 
 void Occt3DView::mouseMoveEvent(QMouseEvent* event)
