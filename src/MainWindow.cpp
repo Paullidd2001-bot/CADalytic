@@ -1,24 +1,19 @@
 #include "MainWindow.h"
-#include "Occt3DWidget.h"
 #include "Occt3DView.h"
+
 #include <QVBoxLayout>
 #include <QLabel>
-
-
 #include <QMenuBar>
 #include <QToolBar>
 #include <QStatusBar>
 #include <QFileDialog>
+#include <QWidget>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
     resize(1024, 768);
     move(100, 100);
-
-    // Central OCCT viewer
-    m_view = new Occt3DWidget(this);
-    setCentralWidget(m_view);
 
     createActions();
     createMenus();
@@ -27,18 +22,21 @@ MainWindow::MainWindow(QWidget* parent)
 
     setWindowTitle(tr("CADalytic"));
 
+    //
+    // ⭐ Create the OCCT QWindow
+    //
+    m_view = new Occt3DView();
 
-    // // Central OCCT viewer
-    // m_view = new Occt3DWidget(this);
-    // setCentralWidget(m_view);
+    //
+    // ⭐ Wrap it in a QWidget so it can be used as central widget
+    //
+    QWidget* container = QWidget::createWindowContainer(m_view, this);
+    container->setFocusPolicy(Qt::StrongFocus);
 
-    // createActions();
-    // createMenus();
-    // createToolBars();
-    // createStatusBar();
-
-    // setWindowTitle(tr("CADalytic"));
-    // resize(1024, 768);
+    //
+    // ⭐ Set as central widget
+    //
+    setCentralWidget(container);
 }
 
 MainWindow::~MainWindow() = default;
@@ -63,13 +61,13 @@ void MainWindow::createActions()
     // View → Fit All
     m_actionFitAll = new QAction(tr("Fit &All"), this);
     connect(m_actionFitAll, &QAction::triggered, this, [this]() {
-        m_view->view()->fitAll();     // ⭐ Correct call
+        m_view->fitAll();
     });
 
     // View → Reset View
     m_actionResetView = new QAction(tr("&Reset View"), this);
     connect(m_actionResetView, &QAction::triggered, this, [this]() {
-        m_view->view()->resetView();  // ⭐ Correct call
+        m_view->resetView();
     });
 
     // File → Exit

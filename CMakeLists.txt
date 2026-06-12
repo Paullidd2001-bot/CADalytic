@@ -15,7 +15,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)
 # ---------------------------------------------------------
 # OpenCASCADE
 # ---------------------------------------------------------
-set(OpenCASCADE_DIR "C:/dev/occt-8.0.0/occt-opengl-build/install/cmake")
+set(OpenCASCADE_DIR "C:/dev/occt-8.0.0/OCCT-8_0_0/build/install/cmake")
 find_package(OpenCASCADE REQUIRED)
 
 # ---------------------------------------------------------
@@ -53,8 +53,6 @@ add_executable(cadalytic
 
     src/Occt3DView.cpp
     src/Occt3DView.h
-    src/Occt3DWidget.cpp
-    src/Occt3DWidget.h
 )
 
 target_include_directories(cadalytic PRIVATE

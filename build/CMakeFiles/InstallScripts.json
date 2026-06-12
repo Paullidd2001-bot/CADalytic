@@ -1,8 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/cmake_install.cmake",
-		"C:/Users/Paul.Liddicott/Documents/CADalytic/CADalytic/build/geometry/cmake_install.cmake"
-	],
-	"Parallel" : false
-}

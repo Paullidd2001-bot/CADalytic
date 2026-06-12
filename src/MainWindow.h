@@ -1,9 +1,9 @@
 #pragma once
 
 #include <QMainWindow>
+#include "Occt3DView.h"   // ⭐ Add this include
 
 class QAction;
-class Occt3DWidget;   // ⭐ NEW — replaces OcctViewWidget
 
 class MainWindow : public QMainWindow
 {
@@ -20,10 +20,10 @@ private:
     void createStatusBar();
 
 private:
-    Occt3DWidget* m_view;   // ⭐ NEW — replaces OcctViewWidget*
+    Occt3DView* m_view = nullptr;   // ⭐ Add this member
 
-    QAction* m_actionOpen;
-    QAction* m_actionFitAll;
-    QAction* m_actionResetView;
-    QAction* m_actionExit;
+    QAction* m_actionOpen = nullptr;
+    QAction* m_actionFitAll = nullptr;
+    QAction* m_actionResetView = nullptr;
+    QAction* m_actionExit = nullptr;
 };

@@ -1,2 +1,47 @@
+# Build directories
+build/
+build-*/
+cmake-build-*/
+
+# Deployment output
+deploy/
+
+# Qt generated files
+*.user
+*.qrc.dep
+*.moc
+*.qmlc
+*.jsc
+*.qmlcache
+*.pro.user
+*.pro.user.*
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+*.ninja
+*.ninja_deps
+*.ninja_log
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.obj
+*.o
+*.pdb
+*.lib
+*.a
+
+# Logs and temp files
+*.log
+*.tmp
+*.cache
+
+# IDE folders
 .vscode/
-../.vscode/
+.idea/
