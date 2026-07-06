@@ -103,6 +103,21 @@ void Occt3DView::initOcct()
     m_context->SetDisplayMode(AIS_Shaded, true);
     m_context->SetAutomaticHilight(true);
     m_context->Activate(0);
+
+    // Preselection (hover)
+    Handle(Prs3d_Drawer) hoverStyle =
+        m_context->HighlightStyle(Prs3d_TypeOfHighlight_LocalDynamic);
+    hoverStyle->SetColor(Quantity_NOC_YELLOW);
+    hoverStyle->SetTransparency(0.0);
+    hoverStyle->SetWidth(2.0);
+
+    // Selection (clicked)
+    Handle(Prs3d_Drawer) selStyle =
+        m_context->HighlightStyle(Prs3d_TypeOfHighlight_Selected);
+    selStyle->SetColor(Quantity_NOC_BLUE1);
+    selStyle->SetTransparency(0.0);
+    selStyle->SetWidth(3.0);
+
     // Selection Modes
     m_context->Deactivate();
     m_context->Activate(AIS_Shape::SelectionMode(TopAbs_SHAPE));   // whole shape
