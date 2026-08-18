@@ -18,12 +18,18 @@ struct Bounds {
 
     Bounds(const Vector3& min, const Vector3& max)
         : min(min), max(max) {}
+    
+    // Move semantics
+    Bounds(Bounds&&) = default;
+    Bounds& operator=(Bounds&&) = default;
+    Bounds(const Bounds&) = default;
+    Bounds& operator=(const Bounds&) = default;
 
-    bool isValid() const {
+    inline bool isValid() const {
         return min.x <= max.x && min.y <= max.y && min.z <= max.z;
     }
 
-    void expandToInclude(const Vector3& p) {
+    inline void expandToInclude(const Vector3& p) {
         if (p.x < min.x) min.x = p.x;
         if (p.y < min.y) min.y = p.y;
         if (p.z < min.z) min.z = p.z;
@@ -33,24 +39,24 @@ struct Bounds {
         if (p.z > max.z) max.z = p.z;
     }
 
-    void expandToInclude(const Bounds& b) {
+    inline void expandToInclude(const Bounds& b) {
         expandToInclude(b.min);
         expandToInclude(b.max);
     }
 
-    Vector3 center() const {
+    inline Vector3 center() const {
         return { (min.x + max.x) * 0.5,
                  (min.y + max.y) * 0.5,
                  (min.z + max.z) * 0.5 };
     }
 
-    Vector3 size() const {
+    inline Vector3 size() const {
         return { max.x - min.x,
                  max.y - min.y,
                  max.z - min.z };
     }
 
-    bool contains(const Vector3& p) const {
+    inline bool contains(const Vector3& p) const {
         return p.x >= min.x && p.x <= max.x &&
                p.y >= min.y && p.y <= max.y &&
                p.z >= min.z && p.z <= max.z;
