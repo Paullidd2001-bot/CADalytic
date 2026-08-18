@@ -10,8 +10,14 @@ struct Quaternion {
     Quaternion() : w(1), x(0), y(0), z(0) {}
     Quaternion(double w, double x, double y, double z)
         : w(w), x(x), y(y), z(z) {}
+    
+    // Move semantics
+    Quaternion(Quaternion&&) = default;
+    Quaternion& operator=(Quaternion&&) = default;
+    Quaternion(const Quaternion&) = default;
+    Quaternion& operator=(const Quaternion&) = default;
 
-    static Quaternion fromAxisAngle(const Vector3& axis, double radians) {
+    static inline Quaternion fromAxisAngle(const Vector3& axis, double radians) {
         double half = radians * 0.5;
         double s = std::sin(half);
         return {
@@ -22,7 +28,7 @@ struct Quaternion {
         };
     }
 
-    Quaternion normalized() const {
+    inline Quaternion normalized() const {
         double len = std::sqrt(w*w + x*x + y*y + z*z);
         return { w/len, x/len, y/len, z/len };
     }
