@@ -6,6 +6,7 @@
 #include <QResizeEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QTimer>
 
 #include <AIS_InteractiveContext.hxx>
 #include <AIS_ViewCube.hxx>
@@ -16,6 +17,8 @@
 
 class Occt3DView : public QWindow
 {
+    Q_OBJECT
+
 public:
     explicit Occt3DView(QWindow* parent = nullptr);
     ~Occt3DView() override;
@@ -32,14 +35,20 @@ protected:
     void mouseMoveEvent(QMouseEvent* event) override;
     void wheelEvent(QWheelEvent* event) override;
 
+private slots:
+    void onRenderTimerTimeout();
+
 private:
     void initOcct();
     void renderOcct();
+    void scheduleRender();
 
 private:
     bool m_initialized = false;
+    bool m_renderScheduled = false;
 
     QOpenGLContext* m_glContext = nullptr;
+    QTimer* m_renderTimer = nullptr;
 
     Handle(Aspect_DisplayConnection) m_displayConnection;
     Handle(OpenGl_GraphicDriver)     m_driver;
