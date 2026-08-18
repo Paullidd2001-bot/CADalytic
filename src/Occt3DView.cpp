@@ -2,6 +2,7 @@
 
 #include <QSurfaceFormat>
 #include <QDebug>
+#include <QTimer>
 
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepPrimAPI_MakeCylinder.hxx>
@@ -19,13 +20,18 @@ Occt3DView::Occt3DView(QWindow* parent)
 {
     setSurfaceType(QSurface::OpenGLSurface);
 
-    // ⭐ DO NOT set a custom format here.
-    // The global format from main.cpp MUST control the GL profile.
+    // Setup deferred render timer (16ms = 60 FPS target)
+    m_renderTimer = new QTimer(this);
+    m_renderTimer->setInterval(16);
+    connect(m_renderTimer, &QTimer::timeout, this, &Occt3DView::onRenderTimerTimeout);
 }
 
 Occt3DView::~Occt3DView()
 {
-    // No custom GL context to delete
+    if (m_renderTimer) {
+        m_renderTimer->stop();
+        delete m_renderTimer;
+    }
 }
 
 Handle(V3d_View) Occt3DView::view() const
@@ -38,7 +44,7 @@ void Occt3DView::fitAll()
     if (!m_view.IsNull())
     {
         m_view->FitAll();
-        renderOcct();
+        scheduleRender();
     }
 }
 
@@ -48,7 +54,26 @@ void Occt3DView::resetView()
     {
         m_view->SetProj(V3d_Zpos);
         m_view->FitAll();
+        scheduleRender();
+    }
+}
+
+void Occt3DView::scheduleRender()
+{
+    if (!m_renderScheduled) {
+        m_renderScheduled = true;
+        if (!m_renderTimer->isActive()) {
+            m_renderTimer->start();
+        }
+    }
+}
+
+void Occt3DView::onRenderTimerTimeout()
+{
+    if (m_renderScheduled && m_initialized) {
         renderOcct();
+        m_renderScheduled = false;
+        // Keep timer running but only render when scheduled
     }
 }
 
@@ -125,79 +150,67 @@ void Occt3DView::initOcct()
     m_context->Activate(AIS_Shape::SelectionMode(TopAbs_EDGE));    // edge
     m_context->Activate(AIS_Shape::SelectionMode(TopAbs_FACE));    // face
 
-    // ViewCube – diagnostic version
+    // ViewCube – set to topmost layer with proper persistence
     m_viewCube = new AIS_ViewCube();
-    m_viewCube->SetSize(200.0);  // big
-    m_viewCube->SetColor(Quantity_Color(1.0, 0.0, 0.0, Quantity_TOC_RGB)); // bright red
+    m_viewCube->SetSize(200.0);
+    m_viewCube->SetColor(Quantity_Color(1.0, 0.0, 0.0, Quantity_TOC_RGB));
     m_viewCube->SetBoxColor(Quantity_Color(1.0, 0.8, 0.8, Quantity_TOC_RGB));
     m_viewCube->SetTextColor(Quantity_NOC_BLACK);
     m_viewCube->SetAutoHilight(true);
 
-    // ❌ no transform persistence
-    // ❌ no ZLayer
-    // ❌ no offset
-    // just a plain 3D object in the scene
-    m_context->Display(m_viewCube, AIS_Shaded, 0, false);
-
-    // Make sure it's in view
-    m_view->FitAll();
-
-    // Put cube on topmost 2D layer
-    //m_viewCube->SetTransformPersistence(aPers);
+    // Display once with topmost Z-layer (FIXED: removed duplicate display call)
     m_viewCube->SetZLayer(Graphic3d_ZLayerId_Topmost);
-
     m_context->Display(m_viewCube, AIS_Shaded, 0, false);
 
     // Grid
     m_viewer->SetPrivilegedPlane(gp_Ax3(gp_Pnt(0,0,0), gp_Dir(0,0,1)));
     m_viewer->ActivateGrid(Aspect_GT_Rectangular, Aspect_GDM_Lines);
 
-    // Demo geometry
+    // Demo geometry - batch display with Handle for consistency
     Handle(AIS_Shape) box =
         new AIS_Shape(BRepPrimAPI_MakeBox(100, 80, 60).Shape());
     Handle(AIS_Shape) cyl =
         new AIS_Shape(BRepPrimAPI_MakeCylinder(20, 80).Shape());
+    Handle(AIS_Shape) sphere =
+        new AIS_Shape(BRepPrimAPI_MakeSphere(40).Shape());
+    Handle(AIS_Shape) cone =
+        new AIS_Shape(BRepPrimAPI_MakeCone(10, 5, 60).Shape());
+    Handle(AIS_Shape) torus =
+        new AIS_Shape(BRepPrimAPI_MakeTorus(40, 10).Shape());
 
     box->SetDisplayMode(AIS_Shaded);
     cyl->SetDisplayMode(AIS_Shaded);
+    sphere->SetDisplayMode(AIS_Shaded);
+    cone->SetDisplayMode(AIS_Shaded);
+    torus->SetDisplayMode(AIS_Shaded);
 
+    // Batch display all shapes
     m_context->Display(box, false);
     m_context->Display(cyl, false);
-
-    m_context->Activate(box, 0);
-    m_context->Activate(cyl, 0);
-
-    auto sphere = new AIS_Shape(BRepPrimAPI_MakeSphere(40).Shape());
-    auto cone   = new AIS_Shape(BRepPrimAPI_MakeCone(10, 5, 60).Shape());
-    auto torus  = new AIS_Shape(BRepPrimAPI_MakeTorus(40, 10).Shape());
-
     m_context->Display(sphere, false);
     m_context->Display(cone, false);
     m_context->Display(torus, false);
 
-    // Position the demo shapes so they don't overlap
+    m_context->Activate(box, 0);
+    m_context->Activate(cyl, 0);
 
-    // Move box left
+    // Position the demo shapes so they don't overlap
     gp_Trsf trBox;
     trBox.SetTranslation(gp_Vec(-150, 0, 0));
     box->SetLocalTransformation(trBox);
 
-    // Move cylinder right
     gp_Trsf trCyl;
     trCyl.SetTranslation(gp_Vec(150, 0, 0));
     cyl->SetLocalTransformation(trCyl);
 
-    // Move sphere up
     gp_Trsf trSphere;
     trSphere.SetTranslation(gp_Vec(0, 150, 0));
     sphere->SetLocalTransformation(trSphere);
 
-    // Move torus down
     gp_Trsf trTorus;
     trTorus.SetTranslation(gp_Vec(0, -150, 0));
     torus->SetLocalTransformation(trTorus);
 
-    // Move cone forward (towards camera)
     gp_Trsf trCone;
     trCone.SetTranslation(gp_Vec(0, 0, 150));
     cone->SetLocalTransformation(trCone);
@@ -210,6 +223,7 @@ void Occt3DView::initOcct()
     cone->SetColor(Quantity_NOC_MAGENTA1);
 
     m_context->UpdateCurrentViewer();
+    m_view->FitAll();
 
     m_initialized = true;
 }
@@ -231,7 +245,7 @@ void Occt3DView::exposeEvent(QExposeEvent* event)
         if (!m_initialized)
             initOcct();
 
-        renderOcct();
+        scheduleRender();
     }
 }
 
@@ -244,7 +258,7 @@ void Occt3DView::resizeEvent(QResizeEvent* event)
 
     m_occtWindow->SetSize(width(), height());
     m_view->MustBeResized();
-    renderOcct();
+    scheduleRender();
 }
 
 void Occt3DView::mousePressEvent(QMouseEvent* event)
@@ -266,7 +280,7 @@ void Occt3DView::mousePressEvent(QMouseEvent* event)
         if (!m_view.IsNull())
             m_view->StartRotation(event->position().x(), event->position().y());
 
-        renderOcct();
+        scheduleRender();
         return;
     }
 
@@ -289,8 +303,9 @@ void Occt3DView::mouseMoveEvent(QMouseEvent* event)
     if (!(event->buttons() & Qt::LeftButton) &&
         !(event->buttons() & Qt::MiddleButton))
     {
+        // Preselection hover - only render if needed (OPTIMIZED: deferred)
         m_context->MoveTo(pos.x(), pos.y(), m_view, true);
-        renderOcct();
+        scheduleRender();
         return;
     }
 
@@ -298,14 +313,14 @@ void Occt3DView::mouseMoveEvent(QMouseEvent* event)
     {
         m_view->Rotation(pos.x(), pos.y());
         m_view->Invalidate();
+        scheduleRender();
     }
     else if (event->buttons() & Qt::MiddleButton)
     {
         m_view->Pan(delta.x(), -delta.y());
         m_view->Invalidate();
+        scheduleRender();
     }
-
-    renderOcct();
 }
 
 void Occt3DView::wheelEvent(QWheelEvent* event)
@@ -323,5 +338,5 @@ void Occt3DView::wheelEvent(QWheelEvent* event)
 
     m_view->Zoom(cx, cy, dx, dy);
     m_view->Invalidate();
-    renderOcct();
+    scheduleRender();
 }
