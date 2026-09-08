@@ -29,10 +29,9 @@ add_library(cadalytic_math INTERFACE)
 target_include_directories(cadalytic_math INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/math
 )
-# Enable inline optimizations
+# Enable MSVC inline optimization
 target_compile_options(cadalytic_math INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:/Ob2>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-finline-limit=10000>
 )
 
 # ---------------------------------------------------------

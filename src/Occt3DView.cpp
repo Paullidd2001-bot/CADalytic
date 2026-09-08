@@ -134,14 +134,14 @@ void Occt3DView::initOcct()
         m_context->HighlightStyle(Prs3d_TypeOfHighlight_LocalDynamic);
     hoverStyle->SetColor(Quantity_NOC_YELLOW);
     hoverStyle->SetTransparency(0.0);
-    hoverStyle->SetWidth(2.0);
+    hoverStyle->FaceBoundaryAspect()->SetWidth(2.0);
 
     // Selection (clicked)
     Handle(Prs3d_Drawer) selStyle =
         m_context->HighlightStyle(Prs3d_TypeOfHighlight_Selected);
     selStyle->SetColor(Quantity_NOC_BLUE1);
     selStyle->SetTransparency(0.0);
-    selStyle->SetWidth(3.0);
+    selStyle->FaceBoundaryAspect()->SetWidth(3.0);
 
     // Selection Modes
     m_context->Deactivate();
