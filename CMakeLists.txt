@@ -43,6 +43,11 @@ target_include_directories(geometry PUBLIC
 )
 
 # ---------------------------------------------------------
+# Core document model
+# ---------------------------------------------------------
+add_subdirectory(core)
+
+# ---------------------------------------------------------
 # Main executable
 # ---------------------------------------------------------
 add_executable(cadalytic
@@ -62,6 +67,7 @@ target_include_directories(cadalytic PRIVATE
 # ---------------------------------------------------------
 target_link_libraries(cadalytic PRIVATE
     cadalytic_math
+    cadalytic_core
     geometry
     Qt6::Widgets
     Qt6::OpenGL
