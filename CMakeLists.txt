@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(CADalytic)
 
+include(CTest)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -81,4 +83,12 @@ if(MSVC)
 else()
     target_compile_options(cadalytic PRIVATE $<$<CONFIG:Release>:-flto>)
     target_link_options(cadalytic PRIVATE $<$<CONFIG:Release>:-flto>)
+endif()
+
+if(BUILD_TESTING)
+    add_executable(cadalytic_core_tests
+        tests/core_model_tests.cpp
+    )
+    target_link_libraries(cadalytic_core_tests PRIVATE cadalytic_core)
+    add_test(NAME cadalytic_core_tests COMMAND cadalytic_core_tests)
 endif()
