@@ -1,0 +1,53 @@
+name: Core tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  core-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Compile core model tests
+        run: >-
+          g++ -std=c++20 -Wall -Wextra -Wpedantic
+          -Icore
+          core/document/Document.cpp
+          core/document/Part.cpp
+          core/constraint/Constraint.cpp
+          core/dependency/DependencyGraph.cpp
+          core/feature/Feature.cpp
+          core/rebuild/RebuildEngine.cpp
+          core/rebuild/TopologicalNaming.cpp
+          core/rebuild/RebuildSafeReferences.cpp
+          core/sketch/Sketch.cpp
+          tests/core_model_tests.cpp
+          -o core_model_tests
+
+      - name: Run core model tests
+        run: ./core_model_tests
+
+      - name: Compile rebuild system tests
+        run: >-
+          g++ -std=c++20 -Wall -Wextra -Wpedantic
+          -Icore
+          core/document/Document.cpp
+          core/document/Part.cpp
+          core/constraint/Constraint.cpp
+          core/dependency/DependencyGraph.cpp
+          core/feature/Feature.cpp
+          core/rebuild/RebuildEngine.cpp
+          core/rebuild/TopologicalNaming.cpp
+          core/rebuild/RebuildSafeReferences.cpp
+          core/sketch/Sketch.cpp
+          tests/rebuild_system_tests.cpp
+          -o rebuild_system_tests
+
+      - name: Run rebuild system tests
+        run: ./rebuild_system_tests

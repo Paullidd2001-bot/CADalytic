@@ -91,4 +91,10 @@ if(BUILD_TESTING)
     )
     target_link_libraries(cadalytic_core_tests PRIVATE cadalytic_core)
     add_test(NAME cadalytic_core_tests COMMAND cadalytic_core_tests)
+
+    add_executable(cadalytic_rebuild_tests
+        tests/rebuild_system_tests.cpp
+    )
+    target_link_libraries(cadalytic_rebuild_tests PRIVATE cadalytic_core)
+    add_test(NAME cadalytic_rebuild_tests COMMAND cadalytic_rebuild_tests)
 endif()

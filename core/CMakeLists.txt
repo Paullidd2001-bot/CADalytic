@@ -11,6 +11,10 @@ add_library(cadalytic_core
     feature/Feature.h
     rebuild/RebuildEngine.cpp
     rebuild/RebuildEngine.h
+    rebuild/TopologicalNaming.cpp
+    rebuild/TopologicalNaming.h
+    rebuild/RebuildSafeReferences.cpp
+    rebuild/RebuildSafeReferences.h
     sketch/Sketch.cpp
     sketch/Sketch.h
 )
