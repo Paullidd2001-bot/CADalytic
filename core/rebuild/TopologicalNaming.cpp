@@ -110,9 +110,12 @@ std::vector<TopoElementName> TopologicalNaming::nameElements(
         }
     }
 
-    // Pass 2: adjacency-based recovery for elements that moved. Jaccard-style
-    // overlap on adjacency signatures; a candidate only wins when it shares at
-    // least one neighbour and covers at least half of the union.
+    // Pass 2: adjacency-based recovery for elements that moved. Overlap-coefficient
+    // (Szymkiewicz–Simpson) on adjacency signatures; a candidate wins when it
+    // shares at least one neighbour and the shared set covers at least half of
+    // the larger adjacency. Unlike the pure Jaccard ratio (shared / union), this
+    // recovers a name when half of an element's neighbours survive a rebuild
+    // even when the element's own signature changed.
     for (std::size_t j = 0; j < factCount; ++j) {
         if (matchIndex[j] != std::numeric_limits<std::size_t>::max()) {
             continue;
@@ -126,12 +129,15 @@ std::vector<TopoElementName> TopologicalNaming::nameElements(
             if (alreadyMatched || currentMatched[i] || current[i].type() != facts[j].type) {
                 continue;
             }
-            const auto [shared, unionSize] = adjacencyOverlap(
-                current[i].adjacency(), facts[j].adjacency);
+            const std::size_t shared = adjacencyOverlap(
+                current[i].adjacency(), facts[j].adjacency).first;
             if (shared == 0) {
                 continue;
             }
-            const double score = static_cast<double>(shared) / static_cast<double>(unionSize);
+            const auto bigger = std::max(current[i].adjacency().size(),
+                                         facts[j].adjacency.size());
+            const double score = bigger == 0 ? 0.0
+                : static_cast<double>(shared) / static_cast<double>(bigger);
             if (score > bestScore) {
                 bestScore = score;
                 bestIndex = i;

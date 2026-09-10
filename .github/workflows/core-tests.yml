@@ -49,5 +49,64 @@ jobs:
           tests/rebuild_system_tests.cpp
           -o rebuild_system_tests
 
-      - name: Run rebuild system tests
+            - name: Run rebuild system tests
         run: ./rebuild_system_tests
+
+      - name: Compile sketch solver tests
+        run: >-
+          g++ -std=c++20 -Wall -Wextra -Wpedantic
+          -Icore -Isolver
+          core/document/Document.cpp
+          core/document/Part.cpp
+          core/constraint/Constraint.cpp
+          core/dependency/DependencyGraph.cpp
+          core/feature/Feature.cpp
+          core/rebuild/RebuildEngine.cpp
+          core/rebuild/TopologicalNaming.cpp
+          core/rebuild/RebuildSafeReferences.cpp
+          core/sketch/Sketch.cpp
+          core/sketch/SketchLine.cpp
+          core/sketch/SketchPoint.cpp
+          solver/sketch/DOFAnalyzer.cpp
+          solver/sketch/SketchSolver.cpp
+          solver/sketch/SketchConstraints.cpp
+          tests/solver_tests.cpp
+          -o solver_tests
+
+      - name: Run sketch solver tests
+        run: ./solver_tests
+
+      - name: Compile event system tests
+        run: >-
+          g++ -std=c++20 -Wall -Wextra -Wpedantic
+          -Ievents
+          events/EventBus.cpp
+          tests/event_tests.cpp
+          -o event_tests
+
+      - name: Run event system tests
+        run: ./event_tests
+
+      - name: Compile command system tests
+        run: >-
+          g++ -std=c++20 -Wall -Wextra -Wpedantic
+          -Icore -Icommand -Ievents
+          core/document/Document.cpp
+          core/document/Part.cpp
+          core/constraint/Constraint.cpp
+          core/dependency/DependencyGraph.cpp
+          core/feature/Feature.cpp
+          core/rebuild/RebuildEngine.cpp
+          core/rebuild/TopologicalNaming.cpp
+          core/rebuild/RebuildSafeReferences.cpp
+          core/sketch/Sketch.cpp
+          core/sketch/SketchLine.cpp
+          core/sketch/SketchPoint.cpp
+          command/Command.cpp
+          command/CommandManager.cpp
+          events/EventBus.cpp
+          tests/command_tests.cpp
+          -o command_tests
+
+      - name: Run command system tests
+        run: ./command_tests

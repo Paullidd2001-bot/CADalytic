@@ -3,9 +3,9 @@
 #include <iostream>
 #include <string>
 
-#include "core/document/Document.h"
-#include "solver/sketch/DOFAnalyzer.h"
-#include "solver/sketch/SketchSolver.h"
+#include "document/Document.h"
+#include "sketch/DOFAnalyzer.h"
+#include "sketch/SketchSolver.h"
 
 namespace {
 
@@ -122,4 +122,17 @@ void testFullyConstrainedRectangle()
             "p3 should be (0, 3) in a 4x3 rectangle");
     require(std::abs(p0.x()) < tolerance && std::abs(p0.y()) < tolerance,
             "fixed point should not move");
+}
+
+} // namespace
+
+int main()
+{
+    testDistanceConstraintMovesPoint();
+    testHorizontalConstraintAlignsY();
+    testVerticalConstraintAlignsX();
+    testCoincidentConstraintJoinsPoints();
+    testFullyConstrainedRectangle();
+    std::cout << "All solver tests passed.\n";
+    return EXIT_SUCCESS;
 }
