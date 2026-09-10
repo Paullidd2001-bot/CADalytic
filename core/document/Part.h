@@ -21,6 +21,7 @@ public:
 
     Feature& addFeature(std::string name, FeatureType type = FeatureType::Generic);
     Sketch& addSketch(std::string name);
+    bool removeFeature(std::uint64_t featureId);
     const std::vector<std::unique_ptr<Feature>>& features() const { return m_features; }
 
 private:

@@ -17,6 +17,10 @@ add_library(cadalytic_core
     rebuild/RebuildSafeReferences.h
     sketch/Sketch.cpp
     sketch/Sketch.h
+    sketch/SketchLine.cpp
+    sketch/SketchLine.h
+    sketch/SketchPoint.cpp
+    sketch/SketchPoint.h
 )
 
 target_include_directories(cadalytic_core PUBLIC

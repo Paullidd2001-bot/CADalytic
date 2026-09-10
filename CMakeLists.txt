@@ -50,6 +50,21 @@ target_include_directories(geometry PUBLIC
 add_subdirectory(core)
 
 # ---------------------------------------------------------
+# Solver module (Component O)
+# ---------------------------------------------------------
+add_subdirectory(solver)
+
+# ---------------------------------------------------------
+# Event system (Component J)
+# ---------------------------------------------------------
+add_subdirectory(events)
+
+# ---------------------------------------------------------
+# Command system (Component I)
+# ---------------------------------------------------------
+add_subdirectory(command)
+
+# ---------------------------------------------------------
 # Main executable
 # ---------------------------------------------------------
 add_executable(cadalytic
@@ -97,4 +112,22 @@ if(BUILD_TESTING)
     )
     target_link_libraries(cadalytic_rebuild_tests PRIVATE cadalytic_core)
     add_test(NAME cadalytic_rebuild_tests COMMAND cadalytic_rebuild_tests)
+
+    add_executable(cadalytic_solver_tests
+        tests/solver_tests.cpp
+    )
+    target_link_libraries(cadalytic_solver_tests PRIVATE cadalytic_solver cadalytic_core)
+    add_test(NAME cadalytic_solver_tests COMMAND cadalytic_solver_tests)
+
+    add_executable(cadalytic_event_tests
+        tests/event_tests.cpp
+    )
+    target_link_libraries(cadalytic_event_tests PRIVATE cadalytic_events)
+    add_test(NAME cadalytic_event_tests COMMAND cadalytic_event_tests)
+
+    add_executable(cadalytic_command_tests
+        tests/command_tests.cpp
+    )
+    target_link_libraries(cadalytic_command_tests PRIVATE cadalytic_command cadalytic_events cadalytic_core)
+    add_test(NAME cadalytic_command_tests COMMAND cadalytic_command_tests)
 endif()
