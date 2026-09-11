@@ -1,6 +1,8 @@
 add_library(cadalytic_serialization
     DocumentSerializer.cpp
     DocumentSerializer.h
+    FileFormat.cpp
+    FileFormat.h
 )
 
 target_include_directories(cadalytic_serialization PUBLIC
@@ -9,4 +11,7 @@ target_include_directories(cadalytic_serialization PUBLIC
 
 target_link_libraries(cadalytic_serialization PUBLIC
     cadalytic_core
+    cadalytic_compression
 )
+
+add_subdirectory(compression)

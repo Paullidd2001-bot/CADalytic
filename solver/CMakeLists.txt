@@ -14,3 +14,6 @@ target_include_directories(cadalytic_solver PUBLIC
 target_link_libraries(cadalytic_solver PUBLIC
     cadalytic_core
 )
+
+# Component R (3D feature solver) — requires OpenCASCADE via the geometry lib.
+add_subdirectory(features)

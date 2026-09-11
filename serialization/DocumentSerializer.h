@@ -25,8 +25,9 @@ namespace serialization {
 /// Sketch field lines:
 ///   point <id> <x> <y> <fixed>
 ///   line <id> <startPointId> <endPointId>
-///   constraint <id> <constrainedId> <type> <paramIndex> <value>
-/// Feature field lines:
+///   constraint <id> <type> <value> [p<pointSrcId> ...] [l<lineSrcId> ...]
+/// Feature field lines (any type):
+///   param <name> <value>
 ///   dependency <featureId>
 ///
 /// IDs are document-relative. On load, IDs are remapped to fresh values

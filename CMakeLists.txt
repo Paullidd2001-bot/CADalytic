@@ -90,6 +90,8 @@ target_include_directories(cadalytic PRIVATE
 target_link_libraries(cadalytic PRIVATE
     cadalytic_math
     cadalytic_core
+    cadalytic_features
+    cadalytic_serialization
     geometry
     Qt6::Widgets
     Qt6::OpenGL
@@ -135,4 +137,18 @@ if(BUILD_TESTING)
     )
     target_link_libraries(cadalytic_command_tests PRIVATE cadalytic_command cadalytic_events cadalytic_core)
     add_test(NAME cadalytic_command_tests COMMAND cadalytic_command_tests)
+
+    add_executable(cadalytic_serialization_tests
+        tests/serialization_tests.cpp
+    )
+    target_link_libraries(cadalytic_serialization_tests PRIVATE cadalytic_serialization cadalytic_core)
+    add_test(NAME cadalytic_serialization_tests COMMAND cadalytic_serialization_tests)
+
+    # Component R: needs OpenCASCADE (already required at the top level).
+    add_executable(cadalytic_feature_solver_tests
+        tests/feature_solver_tests.cpp
+    )
+    target_link_libraries(cadalytic_feature_solver_tests PRIVATE
+        cadalytic_features cadalytic_solver cadalytic_core)
+    add_test(NAME cadalytic_feature_solver_tests COMMAND cadalytic_feature_solver_tests)
 endif()

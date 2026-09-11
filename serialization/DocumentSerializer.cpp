@@ -25,16 +25,58 @@ std::string featureTypeToString(FeatureType type)
         case FeatureType::Sketch:  return "SKETCH";
         case FeatureType::Solid:   return "SOLID";
         case FeatureType::Generic: return "GENERIC";
+        case FeatureType::Box:     return "BOX";
+        case FeatureType::Cylinder: return "CYLINDER";
+        case FeatureType::Sphere:  return "SPHERE";
+        case FeatureType::Cone:    return "CONE";
+        case FeatureType::Torus:   return "TORUS";
+        case FeatureType::Extrude: return "EXTRUDE";
+        case FeatureType::Revolve: return "REVOLVE";
+        case FeatureType::Loft:    return "LOFT";
+        case FeatureType::Fillet:  return "FILLET";
+        case FeatureType::Chamfer: return "CHAMFER";
+        case FeatureType::Shell:   return "SHELL";
+        case FeatureType::Fuse:    return "FUSE";
+        case FeatureType::Cut:     return "CUT";
+        case FeatureType::Common:  return "COMMON";
     }
     return "GENERIC";
 }
 
 FeatureType stringToFeatureType(const std::string& s)
 {
-    if (s == "SKETCH")  return FeatureType::Sketch;
-    if (s == "SOLID")   return FeatureType::Solid;
-    if (s == "GENERIC") return FeatureType::Generic;
+    if (s == "SKETCH")   return FeatureType::Sketch;
+    if (s == "SOLID")    return FeatureType::Solid;
+    if (s == "GENERIC")  return FeatureType::Generic;
+    if (s == "BOX")      return FeatureType::Box;
+    if (s == "CYLINDER") return FeatureType::Cylinder;
+    if (s == "SPHERE")   return FeatureType::Sphere;
+    if (s == "CONE")     return FeatureType::Cone;
+    if (s == "TORUS")    return FeatureType::Torus;
+    if (s == "EXTRUDE")  return FeatureType::Extrude;
+    if (s == "REVOLVE")  return FeatureType::Revolve;
+    if (s == "LOFT")     return FeatureType::Loft;
+    if (s == "FILLET")   return FeatureType::Fillet;
+    if (s == "CHAMFER")  return FeatureType::Chamfer;
+    if (s == "SHELL")    return FeatureType::Shell;
+    if (s == "FUSE")     return FeatureType::Fuse;
+    if (s == "CUT")      return FeatureType::Cut;
+    if (s == "COMMON")   return FeatureType::Common;
     return FeatureType::Generic;
+}
+
+// True when the token names a serializable feature type.
+bool looksLikeFeatureType(const std::string& s)
+{
+    if (s == "SKETCH" || s == "SOLID" || s == "GENERIC" ||
+        s == "BOX" || s == "CYLINDER" || s == "SPHERE" ||
+        s == "CONE" || s == "TORUS" || s == "EXTRUDE" ||
+        s == "REVOLVE" || s == "LOFT" || s == "FILLET" ||
+        s == "CHAMFER" || s == "SHELL" || s == "FUSE" ||
+        s == "CUT" || s == "COMMON") {
+        return true;
+    }
+    return false;
 }
 
 std::string constraintTypeToString(ConstraintType type)
@@ -74,6 +116,17 @@ std::vector<std::string> split(const std::string& line)
     std::string tok;
     while (iss >> tok) tokens.push_back(tok);
     return tokens;
+}
+
+std::string joinTokens(const std::vector<std::string>& tokens,
+                       std::size_t first)
+{
+    std::string result;
+    for (std::size_t i = first; i < tokens.size(); ++i) {
+        if (!result.empty()) result += ' ';
+        result += tokens[i];
+    }
+    return result;
 }
 
 } // namespace
@@ -119,6 +172,9 @@ std::string serialize(const Document& doc)
                     }
                 }
             }
+
+            for (const auto& param : feat.params())
+                out << "    param " << param.first << " " << param.second << "\n";
 
             for (std::uint64_t depId : feat.dependencies())
                 out << "    dependency " << depId << "\n";
@@ -199,7 +255,7 @@ std::unique_ptr<Document> deserialize(const std::string& text,
                     return nullptr;
                 }
                 std::uint64_t srcId = std::stoull(tokens[1]);
-                currentPart = &doc->addPart(tokens[2]);
+                currentPart = &doc->addPart(joinTokens(tokens, 2));
                 partMap[srcId] = currentPart->id();
                 state = InPart;
             } else if (tokens[0] == "end") {
@@ -212,9 +268,7 @@ std::unique_ptr<Document> deserialize(const std::string& text,
         }
 
         if (state == InPart) {
-            if (tokens[0] == featureTypeToString(FeatureType::Sketch) ||
-                tokens[0] == featureTypeToString(FeatureType::Solid) ||
-                tokens[0] == featureTypeToString(FeatureType::Generic)) {
+            if (looksLikeFeatureType(tokens[0])) {
                 if (tokens.size() < 3) {
                     outError = "malformed feature line: " + line;
                     return nullptr;
@@ -222,9 +276,10 @@ std::unique_ptr<Document> deserialize(const std::string& text,
                 std::uint64_t srcId = std::stoull(tokens[1]);
                 FeatureType ftype = stringToFeatureType(tokens[0]);
                 if (ftype == FeatureType::Sketch) {
-                    currentFeature = &currentPart->addSketch(tokens[2]);
+                    currentFeature = &currentPart->addSketch(joinTokens(tokens, 2));
                 } else {
-                    currentFeature = &currentPart->addFeature(tokens[2], ftype);
+                    currentFeature = &currentPart->addFeature(
+                        joinTokens(tokens, 2), ftype);
                 }
                 featureMap[srcId] = currentFeature->id();
                 currentSketch = (ftype == FeatureType::Sketch)
@@ -295,6 +350,18 @@ std::unique_ptr<Document> deserialize(const std::string& text,
                 }
             }
             pendingConstraints.push_back(std::move(pc));
+        } else if (tokens[0] == "param") {
+            if (tokens.size() < 3) {
+                outError = "malformed param: " + line;
+                return nullptr;
+            }
+            if (currentFeature != nullptr) {
+                const double value = std::stod(tokens[2]);
+                currentFeature->setParam(tokens[1], value);
+            } else {
+                outError = "param outside of a feature";
+                return nullptr;
+            }
         } else if (tokens[0] == "dependency") {
             if (tokens.size() < 2) {
                 outError = "malformed dependency: " + line;
