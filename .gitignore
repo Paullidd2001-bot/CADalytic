@@ -6,6 +6,9 @@ cmake-build-*/
 # Deployment output
 deploy/
 
+# Local third-party SDKs
+3rdparty/
+
 # Qt generated files
 *.user
 *.qrc.dep

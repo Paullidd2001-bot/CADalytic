@@ -121,7 +121,7 @@ bool FeatureSolver::evaluateSketch(const Sketch& sketch, TopoDS_Shape& outShape)
             gp_Pnt(end->x(), end->y(), 0.0)).Edge());
     }
 
-    if (!wireBuilder.IsDone() || wireBuilder.NbEdges() == 0) {
+    if (!wireBuilder.IsDone()) {
         return false;
     }
 
@@ -407,7 +407,8 @@ bool FeatureSolver::evaluate(Part& part, Feature& feature, std::string& error)
                     error = "shell base solid contains no faces";
                     return false;
                 }
-                BRepOffsetAPI_MakeThickSolid shell(base, openFaces, thickness, 1e-3);
+                BRepOffsetAPI_MakeThickSolid shell;
+                shell.MakeThickSolidByJoin(base, openFaces, thickness, 1e-3);
                 shell.Build();
                 if (!shell.IsDone()) {
                     error = "shell construction failed";
