@@ -50,6 +50,11 @@ target_include_directories(geometry PUBLIC
 add_subdirectory(core)
 
 # ---------------------------------------------------------
+# Serialization module
+# ---------------------------------------------------------
+add_subdirectory(serialization)
+
+# ---------------------------------------------------------
 # Solver module (Component O)
 # ---------------------------------------------------------
 add_subdirectory(solver)
