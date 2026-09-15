@@ -7,106 +7,21 @@ on:
     branches: [main]
 
 jobs:
-  core-tests:
-    runs-on: ubuntu-latest
+  headless-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Compile core model tests
-        run: >-
-          g++ -std=c++20 -Wall -Wextra -Wpedantic
-          -Icore
-          core/document/Document.cpp
-          core/document/Part.cpp
-          core/constraint/Constraint.cpp
-          core/dependency/DependencyGraph.cpp
-          core/feature/Feature.cpp
-          core/rebuild/RebuildEngine.cpp
-          core/rebuild/TopologicalNaming.cpp
-          core/rebuild/RebuildSafeReferences.cpp
-          core/sketch/Sketch.cpp
-          tests/core_model_tests.cpp
-          -o core_model_tests
+      - name: Configure headless build
+        run: cmake -S . -B build -DCADALYTIC_BUILD_APPLICATION=OFF -DBUILD_TESTING=ON
 
-      - name: Run core model tests
-        run: ./core_model_tests
+      - name: Build headless tests
+        run: cmake --build build --config Release
 
-      - name: Compile rebuild system tests
-        run: >-
-          g++ -std=c++20 -Wall -Wextra -Wpedantic
-          -Icore
-          core/document/Document.cpp
-          core/document/Part.cpp
-          core/constraint/Constraint.cpp
-          core/dependency/DependencyGraph.cpp
-          core/feature/Feature.cpp
-          core/rebuild/RebuildEngine.cpp
-          core/rebuild/TopologicalNaming.cpp
-          core/rebuild/RebuildSafeReferences.cpp
-          core/sketch/Sketch.cpp
-          tests/rebuild_system_tests.cpp
-          -o rebuild_system_tests
-
-            - name: Run rebuild system tests
-        run: ./rebuild_system_tests
-
-      - name: Compile sketch solver tests
-        run: >-
-          g++ -std=c++20 -Wall -Wextra -Wpedantic
-          -Icore -Isolver
-          core/document/Document.cpp
-          core/document/Part.cpp
-          core/constraint/Constraint.cpp
-          core/dependency/DependencyGraph.cpp
-          core/feature/Feature.cpp
-          core/rebuild/RebuildEngine.cpp
-          core/rebuild/TopologicalNaming.cpp
-          core/rebuild/RebuildSafeReferences.cpp
-          core/sketch/Sketch.cpp
-          core/sketch/SketchLine.cpp
-          core/sketch/SketchPoint.cpp
-          solver/sketch/DOFAnalyzer.cpp
-          solver/sketch/SketchSolver.cpp
-          solver/sketch/SketchConstraints.cpp
-          tests/solver_tests.cpp
-          -o solver_tests
-
-      - name: Run sketch solver tests
-        run: ./solver_tests
-
-      - name: Compile event system tests
-        run: >-
-          g++ -std=c++20 -Wall -Wextra -Wpedantic
-          -Ievents
-          events/EventBus.cpp
-          tests/event_tests.cpp
-          -o event_tests
-
-      - name: Run event system tests
-        run: ./event_tests
-
-      - name: Compile command system tests
-        run: >-
-          g++ -std=c++20 -Wall -Wextra -Wpedantic
-          -Icore -Icommand -Ievents
-          core/document/Document.cpp
-          core/document/Part.cpp
-          core/constraint/Constraint.cpp
-          core/dependency/DependencyGraph.cpp
-          core/feature/Feature.cpp
-          core/rebuild/RebuildEngine.cpp
-          core/rebuild/TopologicalNaming.cpp
-          core/rebuild/RebuildSafeReferences.cpp
-          core/sketch/Sketch.cpp
-          core/sketch/SketchLine.cpp
-          core/sketch/SketchPoint.cpp
-          command/Command.cpp
-          command/CommandManager.cpp
-          events/EventBus.cpp
-          tests/command_tests.cpp
-          -o command_tests
-
-      - name: Run command system tests
-        run: ./command_tests
+      - name: Run headless tests
+        run: ctest --test-dir build --build-config Release --output-on-failure

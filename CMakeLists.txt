@@ -3,6 +3,11 @@ project(CADalytic)
 
 include(CTest)
 
+option(CADALYTIC_BUILD_APPLICATION
+    "Build the Qt/OCCT application and OCCT feature solver"
+    ON
+)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -13,16 +18,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 if(MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /GL")
 endif()
-
-# ---------------------------------------------------------
-# Qt6 - Use find_package for cross-platform compatibility
-# ---------------------------------------------------------
-find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)
-
-# ---------------------------------------------------------
-# OpenCASCADE - Use find_package for portability
-# ---------------------------------------------------------
-find_package(OpenCASCADE REQUIRED)
 
 # ---------------------------------------------------------
 # Math module - Header-only with optimizations
@@ -36,13 +31,16 @@ target_compile_options(cadalytic_math INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:/Ob2>
 )
 
-# ---------------------------------------------------------
-# Geometry module
-# ---------------------------------------------------------
-add_subdirectory(geometry)
-target_include_directories(geometry PUBLIC
-    ${OpenCASCADE_INCLUDE_DIRS}
-)
+if(CADALYTIC_BUILD_APPLICATION)
+    # Qt6 and OpenCASCADE are required only by the application path.
+    find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)
+    find_package(OpenCASCADE REQUIRED)
+
+    add_subdirectory(geometry)
+    target_include_directories(geometry PUBLIC
+        ${OpenCASCADE_INCLUDE_DIRS}
+    )
+endif()
 
 # ---------------------------------------------------------
 # Core document model
@@ -69,42 +67,37 @@ add_subdirectory(events)
 # ---------------------------------------------------------
 add_subdirectory(command)
 
-# ---------------------------------------------------------
-# Main executable
-# ---------------------------------------------------------
-add_executable(cadalytic
-    src/main.cpp
-    src/MainWindow.cpp
-    src/MainWindow.h
-    src/Occt3DView.cpp
-    src/Occt3DView.h
-)
+if(CADALYTIC_BUILD_APPLICATION)
+    add_executable(cadalytic
+        src/main.cpp
+        src/MainWindow.cpp
+        src/MainWindow.h
+        src/Occt3DView.cpp
+        src/Occt3DView.h
+    )
 
-target_include_directories(cadalytic PRIVATE
-    ${OpenCASCADE_INCLUDE_DIRS}
-)
+    target_include_directories(cadalytic PRIVATE
+        ${OpenCASCADE_INCLUDE_DIRS}
+    )
 
-# ---------------------------------------------------------
-# Link everything
-# ---------------------------------------------------------
-target_link_libraries(cadalytic PRIVATE
-    cadalytic_math
-    cadalytic_core
-    cadalytic_features
-    cadalytic_serialization
-    geometry
-    Qt6::Widgets
-    Qt6::OpenGL
-    Qt6::OpenGLWidgets
-    ${OpenCASCADE_LIBRARIES}
-)
+    target_link_libraries(cadalytic PRIVATE
+        cadalytic_math
+        cadalytic_core
+        cadalytic_features
+        cadalytic_serialization
+        geometry
+        Qt6::Widgets
+        Qt6::OpenGL
+        Qt6::OpenGLWidgets
+        ${OpenCASCADE_LIBRARIES}
+    )
 
-# Enable Link-Time Optimization for Release builds
-if(MSVC)
-    target_link_options(cadalytic PRIVATE $<$<CONFIG:Release>:/LTCG>)
-else()
-    target_compile_options(cadalytic PRIVATE $<$<CONFIG:Release>:-flto>)
-    target_link_options(cadalytic PRIVATE $<$<CONFIG:Release>:-flto>)
+    if(MSVC)
+        target_link_options(cadalytic PRIVATE $<$<CONFIG:Release>:/LTCG>)
+    else()
+        target_compile_options(cadalytic PRIVATE $<$<CONFIG:Release>:-flto>)
+        target_link_options(cadalytic PRIVATE $<$<CONFIG:Release>:-flto>)
+    endif()
 endif()
 
 if(BUILD_TESTING)
@@ -144,11 +137,12 @@ if(BUILD_TESTING)
     target_link_libraries(cadalytic_serialization_tests PRIVATE cadalytic_serialization cadalytic_core)
     add_test(NAME cadalytic_serialization_tests COMMAND cadalytic_serialization_tests)
 
-    # Component R: needs OpenCASCADE (already required at the top level).
-    add_executable(cadalytic_feature_solver_tests
-        tests/feature_solver_tests.cpp
-    )
-    target_link_libraries(cadalytic_feature_solver_tests PRIVATE
-        cadalytic_features cadalytic_solver cadalytic_core)
-    add_test(NAME cadalytic_feature_solver_tests COMMAND cadalytic_feature_solver_tests)
+    if(CADALYTIC_BUILD_APPLICATION)
+        add_executable(cadalytic_feature_solver_tests
+            tests/feature_solver_tests.cpp
+        )
+        target_link_libraries(cadalytic_feature_solver_tests PRIVATE
+            cadalytic_features cadalytic_solver cadalytic_core)
+        add_test(NAME cadalytic_feature_solver_tests COMMAND cadalytic_feature_solver_tests)
+    endif()
 endif()
