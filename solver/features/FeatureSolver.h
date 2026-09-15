@@ -7,11 +7,12 @@
 
 #include <TopoDS_Shape.hxx>
 
+#include "feature/Feature.h"  // for FeatureType enumeration
+
 namespace cadalytic {
 
 class Part;
 class Sketch;
-class Feature;
 
 // Outcome of a solve pass over a part.
 struct FeatureSolveResult

@@ -14,7 +14,7 @@ target_link_libraries(cadalytic_features PUBLIC
     cadalytic_solver
     cadalytic_core
     geometry
-    ${OpenCASCADE_LIBRARIES}
+    ${CADALYTIC_OCCT_LIBRARIES}
 )
 
 target_include_directories(cadalytic_features PUBLIC

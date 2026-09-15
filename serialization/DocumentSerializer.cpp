@@ -299,6 +299,29 @@ std::unique_ptr<Document> deserialize(const std::string& text,
         }
 
         // state == InFeature
+        // A feature-type token here signals that the previous feature's
+        // sub-field block has ended and a new feature begins in the current
+        // part (mirrors the InPart handler). Stay in InFeature so the new
+        // feature's param/dependency lines are consumed by the same section.
+        if (looksLikeFeatureType(tokens[0])) {
+            if (tokens.size() < 3) {
+                outError = "malformed feature line: " + line;
+                return nullptr;
+            }
+            std::uint64_t srcId = std::stoull(tokens[1]);
+            FeatureType ftype = stringToFeatureType(tokens[0]);
+            if (ftype == FeatureType::Sketch) {
+                currentFeature = &currentPart->addSketch(joinTokens(tokens, 2));
+            } else {
+                currentFeature = &currentPart->addFeature(
+                    joinTokens(tokens, 2), ftype);
+            }
+            featureMap[srcId] = currentFeature->id();
+            currentSketch = (ftype == FeatureType::Sketch)
+                                ? dynamic_cast<Sketch*>(currentFeature)
+                                : nullptr;
+            continue;
+        }
         if (tokens[0] == "point") {
             if (tokens.size() < 5) {
                 outError = "malformed point: " + line;
