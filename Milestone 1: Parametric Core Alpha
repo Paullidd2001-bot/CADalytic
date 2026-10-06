@@ -1,0 +1,39 @@
+Establish the core parametric CAD architecture.
+
+This milestone delivers the foundational systems that all higher-level CAD functionality depends upon:
+
+- Data Model
+- Rebuild Engine
+- Topological Naming
+- Rebuild-Safe References
+- Geometry Kernel Wrapper
+
+Successful completion means CADalytic can:
+
+- Create and manage a document hierarchy
+- Maintain feature dependencies
+- Perform deterministic rebuilds
+- Preserve model references across rebuilds
+- Isolate OCCT behind a geometry abstraction layer
+
+This milestone deliberately excludes:
+
+- Sketching
+- Feature modelling
+- User interface work
+- Assemblies
+- CAM
+- Plugins
+
+Focus is on correctness, maintainability and architectural foundations.
+
+[01] Component C: Data Model
+
+[02] Component D: Rebuild Algorithm
+
+[03] Component F: Topological Naming
+
+[04] Component L: Rebuild-Safe Reference System
+
+[05] Component H: Geometry Kernel Wrapper
+
